@@ -9,6 +9,11 @@ router.post('/register', async (req, res) => {
     const { firstName, lastName, email, password, role } = req.body;
 
     try {
+        if (!global.mongoConnected || !global.mongoConnected()) {
+            req.flash('error', 'Database temporarily unavailable. Please try again later.');
+            return res.redirect('/signUp');
+        }
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).send('Email already registered.');
@@ -45,6 +50,11 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
+        if (!global.mongoConnected || !global.mongoConnected()) {
+            req.flash('error', 'Database temporarily unavailable. Please try again later.');
+            return res.redirect('/login');
+        }
+
         const user = await User.findOne({ email });
         if (!user) {
             req.flash('error', 'Invalid email or password');
