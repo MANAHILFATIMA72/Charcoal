@@ -61,6 +61,7 @@ app.set('layout', 'layouts/main');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const Category = require('./models/Category');
 
 // Use routes
 app.use('/', productRoutes);
@@ -71,16 +72,30 @@ app.use('/admin', adminRoutes);
 const { optionalAuthenticateJWT } = require('./middleware/auth');
 
 // Routes
-app.get('/', optionalAuthenticateJWT, (req, res) => {
-  if (req.user) {
-    if (req.user.role === 'admin') {
-      return res.redirect('/admin/dashboard');
+app.get('/', optionalAuthenticateJWT, async (req, res) => {
+  try {
+    if (req.user) {
+      if (req.user.role === 'admin') {
+        return res.redirect('/admin/dashboard');
+      }
     }
+    
+    // Fetch all categories from database
+    const categories = await Category.find();
+    
+    res.render('users/index', { 
+      layout: 'layouts/homeLayout',
+      title: "Charcoal Clothing | Best Men's Formal &amp; Casual Wear Brand",
+      categories: categories || []
+    });
+  } catch (error) {
+    console.error('[v0] Error fetching categories:', error);
+    res.render('users/index', { 
+      layout: 'layouts/homeLayout',
+      title: "Charcoal Clothing | Best Men's Formal &amp; Casual Wear Brand",
+      categories: []
+    });
   }
-  res.render('users/index', { 
-    layout: 'layouts/homeLayout',
-    title: "Charcoal Clothing | Best Men's Formal &amp; Casual Wear Brand",
-  });
 });
 
 app.get('/login', (req, res) => {
