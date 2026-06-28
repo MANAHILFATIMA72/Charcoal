@@ -11,14 +11,16 @@ require('dotenv').config();
 // Connect to MongoDB
 let mongoConnected = false;
 
-mongoose.connect('mongodb://localhost:27017/adminPanelDB')
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/adminPanelDB';
+
+mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
     mongoConnected = true;
   })
   .catch((error) => {
     console.error('MongoDB connection error:', error);
-    console.log('App will run in limited mode. Please ensure MongoDB is running on localhost:27017');
+    console.log(`App will run in limited mode. Please ensure MongoDB is running on: ${MONGODB_URI}`);
   });
 
 // Make connection status available globally
@@ -26,7 +28,7 @@ global.mongoConnected = () => mongoConnected;
 
 // Set up express app
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
