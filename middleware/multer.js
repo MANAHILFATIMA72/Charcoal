@@ -14,13 +14,14 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // Max file size: 5MB
   fileFilter: (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png/;
+    const fileTypes = /jpeg|jpg|png|jfif/;
+    const mimeTypes = /image\/jpeg|image\/png|image\/jfif/;
     const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimeType = fileTypes.test(file.mimetype);
+    const mimeType = mimeTypes.test(file.mimetype);
     if (extName && mimeType) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, JPG, and PNG images are allowed!'));
+      cb(new Error('Only JPEG, JPG, PNG, and JFIF images are allowed!'));
     }
   },
 });

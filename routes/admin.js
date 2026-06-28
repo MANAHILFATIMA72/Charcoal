@@ -79,7 +79,16 @@ router.get('/products', authenticateToken, authorizeRole('admin'), async (req, r
 });
 
 // Create Product (Protected)
-router.post('/products/create', authenticateToken, authorizeRole('admin'), upload.single('image'), async (req, res) => {
+router.post('/products/create', authenticateToken, authorizeRole('admin'), (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            // Handle multer errors
+            req.flash('error', err.message);
+            return res.redirect('/admin/products');
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         const { name, price, description, category } = req.body;
         const image = req.file ? `/uploads/${req.file.filename}` : null;
@@ -102,7 +111,16 @@ router.post('/products/create', authenticateToken, authorizeRole('admin'), uploa
 });
 
 // Edit Product (Protected)
-router.post('/products/edit/:id', authenticateToken, authorizeRole('admin'), upload.single('image'), async (req, res) => {
+router.post('/products/edit/:id', authenticateToken, authorizeRole('admin'), (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            // Handle multer errors
+            req.flash('error', err.message);
+            return res.redirect('/admin/products');
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, price, description, category } = req.body;
