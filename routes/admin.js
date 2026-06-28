@@ -79,10 +79,47 @@ router.get('/products', authenticateToken, authorizeRole('admin'), async (req, r
 });
 
 // Create Product (Protected)
-router.post('/products/create', authenticateToken, authorizeRole('admin'), upload.single('image'), async (req, res) => {
+router.post('/products/create', authenticateToken, authorizeRole('admin'), (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            // Handle multer errors
+            console.error('[v0] Upload error:', err.message);
+            req.flash('error', err.message);
+            return res.redirect('/admin/products');
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         const { name, price, description, category } = req.body;
-        const image = req.file ? `/uploads/${req.file.filename}` : null;
+        
+        // Validate all required fields
+        if (!name || !name.trim()) {
+            req.flash('error', 'Product name is required.');
+            return res.redirect('/admin/products');
+        }
+        
+        if (!price || isNaN(price) || price <= 0) {
+            req.flash('error', 'Product price must be a valid positive number.');
+            return res.redirect('/admin/products');
+        }
+        
+        if (!description || !description.trim()) {
+            req.flash('error', 'Product description is required.');
+            return res.redirect('/admin/products');
+        }
+        
+        if (!category) {
+            req.flash('error', 'Please select a category.');
+            return res.redirect('/admin/products');
+        }
+
+        if (!req.file) {
+            req.flash('error', 'Image file is required. Please upload an image (JPG, JPEG, PNG, or JFIF).');
+            return res.redirect('/admin/products');
+        }
+
+        const image = `/uploads/${req.file.filename}`;
 
         const categoryDoc = await Category.findById(category);
         if (!categoryDoc) {
@@ -95,17 +132,48 @@ router.post('/products/create', authenticateToken, authorizeRole('admin'), uploa
         req.flash('success', 'Product created successfully.');
         res.redirect('/admin/products');
     } catch (err) {
-        console.error('Error saving product:', err);
-        req.flash('error', 'Failed to create product.');
+        console.error('[v0] Error saving product:', err.message);
+        req.flash('error', `Error creating product: ${err.message}`);
         res.redirect('/admin/products');
     }
 });
 
 // Edit Product (Protected)
-router.post('/products/edit/:id', authenticateToken, authorizeRole('admin'), upload.single('image'), async (req, res) => {
+router.post('/products/edit/:id', authenticateToken, authorizeRole('admin'), (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            // Handle multer errors
+            console.error('[v0] Upload error:', err.message);
+            req.flash('error', err.message);
+            return res.redirect('/admin/products');
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, price, description, category } = req.body;
+        
+        // Validate required fields
+        if (!name || !name.trim()) {
+            req.flash('error', 'Product name is required.');
+            return res.redirect('/admin/products');
+        }
+        
+        if (!price || isNaN(price) || price <= 0) {
+            req.flash('error', 'Product price must be a valid positive number.');
+            return res.redirect('/admin/products');
+        }
+        
+        if (!description || !description.trim()) {
+            req.flash('error', 'Product description is required.');
+            return res.redirect('/admin/products');
+        }
+        
+        if (!category) {
+            req.flash('error', 'Please select a category.');
+            return res.redirect('/admin/products');
+        }
 
         const categoryDoc = await Category.findById(category);
         if (!categoryDoc) {
@@ -113,12 +181,19 @@ router.post('/products/edit/:id', authenticateToken, authorizeRole('admin'), upl
             return res.redirect('/admin/products');
         }
 
-        await Product.findByIdAndUpdate(id, { name, price, description, category });
+        const updateData = { name, price, description, category };
+        
+        // Only update image if a new one was uploaded
+        if (req.file) {
+            updateData.image = `/uploads/${req.file.filename}`;
+        }
+
+        await Product.findByIdAndUpdate(id, updateData);
         req.flash('success', 'Product updated successfully.');
         res.redirect('/admin/products');
     } catch (err) {
-        console.error('Error editing product:', err);
-        req.flash('error', 'Failed to update product.');
+        console.error('[v0] Error editing product:', err.message);
+        req.flash('error', `Error updating product: ${err.message}`);
         res.redirect('/admin/products');
     }
 });

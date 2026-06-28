@@ -85,7 +85,7 @@
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                               </div>
                               <div class="modal-body">
-                                  <form action="/admin/products/edit/<%= product._id %>" method="POST">
+                                  <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data">
                                       <div class="mb-3">
                                           <label for="productName" class="form-label">Name</label>
                                           <input type="text" class="form-control" id="productName" name="name" value="<%= product.name %>" required>
@@ -105,6 +105,11 @@
                                                   <option value="<%= category._id %>" <%= product.category && product.category._id.toString() === category._id.toString() ? 'selected' : '' %>><%= category.name %></option>
                                               <% }) %>
                                           </select>
+                                      </div>
+                                      <div class="mb-3">
+                                          <label for="editProductImage" class="form-label">Image (Optional)</label>
+                                          <input type="file" class="form-control" id="editProductImage" name="image" accept=".jpg,.jpeg,.png,.jfif">
+                                          <small class="text-muted">Allowed formats: JPG, JPEG, PNG, JFIF</small>
                                       </div>
                                       <button type="submit" class="btn">Update Product</button>
                                   </form>
@@ -162,8 +167,9 @@
                       </select>
                   </div>
                   <div class="mb-3">
-                      <label for="productImage" class="form-label">Image</label>
-                      <input type="file" class="form-control" id="productImage" name="image">
+                      <label for="productImage" class="form-label">Image (Required)</label>
+                      <input type="file" class="form-control" id="productImage" name="image" accept=".jpg,.jpeg,.png,.jfif" required>
+                      <small class="text-muted">Allowed formats: JPG, JPEG, PNG, JFIF</small>
                   </div>
                   <button type="submit" class="btn">Add Product</button>
               </form>
