@@ -38,7 +38,14 @@ router.post('/register', async (req, res) => {
         );
 
         res.cookie('token', token, { httpOnly: true });
-        res.redirect('/'); // Redirect to homepage
+        req.flash('success', `Welcome, ${user.firstName}! Your account has been created successfully.`);
+        
+        // Redirect based on role
+        if (user.role === 'admin') {
+            res.redirect('/admin/dashboard');
+        } else {
+            res.redirect('/');
+        }
     } catch (err) {
         console.error('Error registering user:', err);
         res.status(500).send('Error registering user');
@@ -74,12 +81,13 @@ router.post('/login', async (req, res) => {
         );
 
         res.cookie('token', token, { httpOnly: true });
-        req.flash('success', 'Login successful');
-
-        // Redirect based on role
+        
+        // Flash message based on role
         if (user.role === 'admin') {
+            req.flash('success', `Welcome back, Admin ${user.firstName}! You have been logged in successfully.`);
             res.redirect('/admin/dashboard');
         } else {
+            req.flash('success', `Welcome back, ${user.firstName}! You have been logged in successfully.`);
             res.redirect('/');
         }
     } catch (err) {
