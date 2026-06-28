@@ -9,9 +9,20 @@ const expressLayouts = require('express-ejs-layouts');
 require('dotenv').config();
 
 // Connect to MongoDB
+let mongoConnected = false;
+
 mongoose.connect('mongodb://localhost:27017/adminPanelDB')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((error) => console.error('MongoDB connection error:', error));
+  .then(() => {
+    console.log('Connected to MongoDB');
+    mongoConnected = true;
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+    console.log('App will run in limited mode. Please ensure MongoDB is running on localhost:27017');
+  });
+
+// Make connection status available globally
+global.mongoConnected = () => mongoConnected;
 
 // Set up express app
 const app = express();

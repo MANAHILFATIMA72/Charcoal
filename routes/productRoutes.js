@@ -109,6 +109,12 @@ router.post('/wishlist/remove/:productId', authenticateToken, async (req, res) =
 router.get('/category/:categoryName', async (req, res) => {
     try {
         const categoryName = req.params.categoryName;
+        
+        if (!global.mongoConnected || !global.mongoConnected()) {
+            req.flash('error', 'Database temporarily unavailable');
+            return res.redirect('/');
+        }
+        
         const category = await Category.findOne({ name: categoryName });
 
         if (!category) {
@@ -131,31 +137,7 @@ router.get('/category/:categoryName', async (req, res) => {
     }
 });
 
-// Route to display products by category
-router.get('/category/:categoryName', async (req, res) => {
-  try {
-    const categoryName = req.params.categoryName;
-    const category = await Category.findOne({ name: categoryName });
 
-    if (!category) {
-      req.flash('error', 'Category not found');
-      return res.status(404).render('users/index', { title: 'Home', message: 'Category not found' });
-    }
-
-    const products = await Product.find({ category: category._id });
-
-    res.render('users/category', {
-      layout: './layouts/main', 
-      title: `Products in ${categoryName}`,
-      products,
-      categoryName,
-    });
-  } catch (error) {
-    req.flash('error', 'Error fetching products');
-    console.error('Error fetching products:', error);
-    res.status(500).render('users/index', { title: 'Home', message: 'Error fetching products' });
-  }
-});
 
 // Route to display product details
 router.get('/product/:productId', async (req, res) => {
