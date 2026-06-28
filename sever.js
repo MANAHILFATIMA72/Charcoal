@@ -42,7 +42,7 @@ app.use('/uploads', express.static('public/uploads'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
-app.set('layout', '/layouts/main');
+app.set('layout', 'layouts/main');
 
 // Import routes
 const productRoutes = require('./routes/productRoutes');
